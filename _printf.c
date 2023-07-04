@@ -1,234 +1,90 @@
 #include "main.h"
-#include <unistd.h>
 
 /**
- * _putchar - Writes a character to the standard output (stdout)
- * @c: The character to be written
- * Return: On success, the number of characters written. On error, -1 is returned
- */
-int _putchar(char c)
-{
-    return write(1, &c, 1);
-}
-
-/**
- * _printf - Custom printf function
+ * _printf - Prints output according to a format
  * @format: The format string
- * Return: The number of characters printed (excluding the null byte used to end output to strings)
+ * @...: Additional arguments to print
+ *
+ * Return: The number of characters printed
  */
 int _printf(const char *format, ...)
 {
-    va_list args;
-    char buffer[1024];
+    int i;
     int count = 0;
+    va_list args;
+    char buffer[BUFFER_SIZE];
     int buffer_index = 0;
+    const char *hex_digits = "0123456789ABCDEF";
 
     va_start(args, format);
 
-    while (format && *format)
+    for (i = 0; format && format[i]; i++)
     {
-        if (*format == '%')
+        if (format[i] == '%')
         {
-            format++;
+            i++;
+            if (format[i] == '\0')
+                return (-1);
 
-            if (*format == 'c')
+            switch (format[i])
             {
-                char c = va_arg(args, int);
-                buffer[buffer_index++] = c;
-            }
-            else if (*format == 's')
-            {
-                char *str = va_arg(args, char *);
-                int i;
-
-                if (str == NULL)
-                    str = "(null)";
-
-                for (i = 0; str[i]; i++)
-                    buffer[buffer_index++] = str[i];
-            }
-            else if (*format == '%')
-            {
-                buffer[buffer_index++] = '%';
-            }
-            else if (*format == 'd' || *format == 'i')
-            {
-                int num = va_arg(args, int);
-                char num_str[50];
-                int i = 0;
-
-                if (num < 0)
-                {
-                    buffer[buffer_index++] = '-';
-                    num = -num;
-                }
-
-                if (num == 0)
-                {
-                    buffer[buffer_index++] = '0';
-                }
-                else
-                {
-                    while (num != 0)
-                    {
-                        num_str[i++] = '0' + (num % 10);
-                        num /= 10;
-                    }
-
-                    while (--i >= 0)
-                        buffer[buffer_index++] = num_str[i];
-                }
-            }
-            else if (*format == 'u')
-            {
-                unsigned int num = va_arg(args, unsigned int);
-                char num_str[50];
-                int i = 0;
-
-                if (num == 0)
-                {
-                    buffer[buffer_index++] = '0';
-                }
-                else
-                {
-                    while (num != 0)
-                    {
-                        num_str[i++] = '0' + (num % 10);
-                        num /= 10;
-                    }
-
-                    while (--i >= 0)
-                        buffer[buffer_index++] = num_str[i];
-                }
-            }
-            else if (*format == 'o')
-            {
-                unsigned int num = va_arg(args, unsigned int);
-                char num_str[50];
-                int i = 0;
-
-                if (num == 0)
-                {
-                    buffer[buffer_index++] = '0';
-                }
-                else
-                {
-                    while (num != 0)
-                    {
-                        num_str[i++] = '0' + (num % 8);
-                        num /= 8;
-                    }
-
-                    while (--i >= 0)
-                        buffer[buffer_index++] = num_str[i];
-                }
-            }
-            else if (*format == 'x' || *format == 'X')
-            {
-                unsigned int num = va_arg(args, unsigned int);
-                char num_str[50];
-                int i = 0;
-                char hex_digits[] = "0123456789abcdef";
-                if (*format == 'X')
-                    hex_digits = "0123456789ABCDEF";
-
-                if (num == 0)
-                {
-                    buffer[buffer_index++] = '0';
-                }
-                else
-                {
-                    while (num != 0)
-                    {
-                        num_str[i++] = hex_digits[num % 16];
-                        num /= 16;
-                    }
-
-                    while (--i >= 0)
-                        buffer[buffer_index++] = num_str[i];
-                }
-            }
-            else if (*format == 'b')
-            {
-                unsigned int num = va_arg(args, unsigned int);
-                char num_str[50];
-                int i = 0;
-
-                if (num == 0)
-                {
-                    buffer[buffer_index++] = '0';
-                }
-                else
-                {
-                    while (num != 0)
-                    {
-                        num_str[i++] = '0' + (num % 2);
-                        num /= 2;
-                    }
-
-                    while (--i >= 0)
-                        buffer[buffer_index++] = num_str[i];
-                }
-            }
-            else if (*format == 'S')
-            {
-                char *str = va_arg(args, char *);
-                int i;
-
-                if (str == NULL)
-                    str = "(null)";
-
-                for (i = 0; str[i]; i++)
-                {
-                    if (str[i] < ' ' || str[i] >= 127)
-                    {
-                        buffer[buffer_index++] = '\\';
-                        buffer[buffer_index++] = 'x';
-                        buffer[buffer_index++] = (str[i] / 16) < 10 ? (str[i] / 16) + '0' : (str[i] / 16) - 10 + 'A';
-                        buffer[buffer_index++] = (str[i] % 16) < 10 ? (str[i] % 16) + '0' : (str[i] % 16) - 10 + 'A';
-                    }
-                    else
-                    {
-                        buffer[buffer_index++] = str[i];
-                    }
-                }
-            }
-            else if (*format == 'r')
-            {
-                char *str = va_arg(args, char *);
-                int i, j;
-
-                if (str == NULL)
-                    str = "(null)";
-
-                for (i = 0; str[i]; i++)
-                    ;
-
-                for (j = i - 1; j >= 0; j--)
-                    buffer[buffer_index++] = str[j];
-            }
-            else if (*format == 'R')
-            {
-                char *str = va_arg(args, char *);
-                int i;
-
-                if (str == NULL)
-                    str = "(null)";
-
-                buffer_index = rot13(str, buffer, buffer_index);
+                case 'c':
+                    buffer_index = print_char(buffer, va_arg(args, int), buffer_index);
+                    break;
+                case 's':
+                    buffer_index = print_string(buffer, va_arg(args, char *), buffer_index);
+                    break;
+                case '%':
+                    buffer_index = print_char(buffer, '%', buffer_index);
+                    break;
+                case 'd':
+                case 'i':
+                    buffer_index = print_int(buffer, va_arg(args, int), buffer_index);
+                    break;
+                case 'u':
+                    buffer_index = print_unsigned(buffer, va_arg(args, unsigned int), 10, 0, buffer_index);
+                    break;
+                case 'o':
+                    buffer_index = print_unsigned(buffer, va_arg(args, unsigned int), 8, 0, buffer_index);
+                    break;
+                case 'x':
+                    buffer_index = print_unsigned(buffer, va_arg(args, unsigned int), 16, 0, buffer_index);
+                    break;
+                case 'X':
+                    buffer_index = print_unsigned(buffer, va_arg(args, unsigned int), 16, 1, buffer_index);
+                    break;
+                case 'b':
+                    buffer_index = print_unsigned(buffer, va_arg(args, unsigned int), 2, 0, buffer_index);
+                    break;
+                case 'S':
+                    buffer_index = print_string_custom(buffer, va_arg(args, char *), buffer_index);
+                    break;
+                case 'r':
+                    buffer_index = print_string_reverse(buffer, va_arg(args, char *), buffer_index);
+                    break;
+                case 'R':
+                    buffer_index = print_string_rot13(buffer, va_arg(args, char *), buffer_index);
+                    break;
+                default:
+                    buffer_index = print_char(buffer, '%', buffer_index);
+                    buffer_index = print_char(buffer, format[i], buffer_index);
+                    break;
             }
         }
         else
         {
-            buffer[buffer_index++] = *format;
+            buffer_index = print_char(buffer, format[i], buffer_index);
         }
 
-        format++;
+        if (buffer_index >= BUFFER_SIZE - 1)
+        {
+            write_buffer(buffer, &buffer_index, &count);
+        }
     }
+
+    write_buffer(buffer, &buffer_index, &count);
 
     va_end(args);
 
-    count = write(1, buffer, buffer_index);
-
-    return count;
+    return (count);
 }
